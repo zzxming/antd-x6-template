@@ -1,5 +1,5 @@
 import { Inter } from 'next/font/google';
-import './globals.css';
+import './globals.scss';
 import StyledComponentsRegistry from '@/lib/AntdRegistry';
 import { ConfigProvider } from 'antd';
 import theme from '@/theme/theme';

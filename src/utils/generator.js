@@ -5,6 +5,7 @@ const portsAttr = {
         r: 4,
         magnet: true,
         stroke: '#ccc',
+        visibility: 'hidden',
     },
 };
 const portPositionArgs = {

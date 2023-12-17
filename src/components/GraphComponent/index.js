@@ -35,16 +35,19 @@ const GraphComponent = forwardRef((props, ref) => {
                 type: 'doubleMesh',
             },
             // 平移
-            panning: true,
+            // panning: true,
             // 缩放
             mousewheel: {
                 enabled: true,
                 //   modifiers: 'Ctrl',
                 maxScale: 2,
-                minScale: 0.2,
+                minScale: 0.5,
             },
             // 连接规则
             connecting: {
+                // 自动吸附
+                snap: true,
+                highlight: true,
                 // 是否允许连接到空白位置
                 allowBlank: true,
                 // 是否允许创建循环连线(连接到自己)
@@ -88,6 +91,7 @@ const GraphComponent = forwardRef((props, ref) => {
                 graph.removeCells(graph.getSelectedCells());
             }
         });
+        // 边添加箭头
         graph.on('edge:mouseenter', ({ cell }) => {
             cell.addTools([
                 {
@@ -97,15 +101,44 @@ const GraphComponent = forwardRef((props, ref) => {
                     name: 'target-arrowhead',
                     args: {
                         attrs: {
-                            fill: 'red',
+                            fill: '#0ea5e9',
                         },
                     },
                 },
             ]);
         });
-
         graph.on('edge:mouseleave', ({ cell }) => {
-            cell.removeTools();
+            cell.removeTool('source-arrowhead');
+            cell.removeTool('target-arrowhead');
+        });
+        // 边鼠标移入显示路径点
+        graph.on('edge:mouseenter', ({ cell }) => {
+            cell.addTools({
+                name: 'vertices',
+                args: {
+                    modifiers: 'ctrl',
+                },
+            });
+        });
+        graph.on('edge:mouseleave', ({ cell }) => {
+            if (cell.hasTool('vertices')) {
+                cell.removeTool('vertices');
+            }
+        });
+        // 鼠标移入后再显示连接庄
+        const showPorts = (ports, show) => {
+            for (let i = 0, len = ports.length; i < len; i += 1) {
+                ports[i].style.visibility = show ? 'visible' : 'hidden';
+            }
+        };
+        // 要直接显示所有的连接庄，使拖拽时可以连接到连接庄
+        graph.on('node:mouseenter', () => {
+            const ports = graphRef.current.querySelectorAll('.x6-port-body');
+            showPorts(ports, true);
+        });
+        graph.on('node:mouseleave', () => {
+            const ports = graphRef.current.querySelectorAll('.x6-port-body');
+            showPorts(ports, false);
         });
     };
     const startDrag = (e) => {
