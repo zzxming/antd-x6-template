@@ -1,5 +1,5 @@
 import GraphComponent from '@/components/GraphComponent';
-import { createPortRect } from '@/utils/generator';
+import { createEdge, createPortRect } from '@/utils/generator';
 
 const nodes = [
     createPortRect({
@@ -23,12 +23,11 @@ const nodes = [
     }),
 ];
 const edges = [
-    {
-        shape: 'edge',
+    createEdge({
         source: 'node1',
         target: 'node2',
         label: 'x6',
-    },
+    }),
 ];
 const data = {
     nodes,

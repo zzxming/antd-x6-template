@@ -2,7 +2,7 @@
 import { createRef, forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { Graph } from '@antv/x6';
 import { Button } from 'antd';
-import { registryDnd, registrySnapline } from '@/lib/X6PluginRegistry';
+import { registryDnd, registrySelection, registrySnapline, registryTransform } from '@/lib/X6PluginRegistry';
 
 import style from './index.module.scss';
 import { createPortRect } from '@/utils/generator';
@@ -61,6 +61,10 @@ const GraphComponent = forwardRef((props, ref) => {
         });
         registrySnapline(graphInstance.current);
         dnd.current = registryDnd(graphInstance.current, dndContainerRef.current);
+        registryTransform(graphInstance.current);
+        registrySelection(graphInstance.current);
+
+        bindEvent(graphInstance.current);
 
         graphInstance.current.fromJSON(props.data); // 渲染元素
         graphInstance.current.centerContent(); // 居中显示
@@ -73,6 +77,36 @@ const GraphComponent = forwardRef((props, ref) => {
     });
     const getContent = () => {
         console.log(graphInstance.current.toJSON());
+    };
+    const getSelection = () => {
+        console.log(graphInstance.current.getSelectedCells());
+    };
+    const bindEvent = (graph) => {
+        // 删除键删除选中节点
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                graph.removeCells(graph.getSelectedCells());
+            }
+        });
+        graph.on('edge:mouseenter', ({ cell }) => {
+            cell.addTools([
+                {
+                    name: 'source-arrowhead',
+                },
+                {
+                    name: 'target-arrowhead',
+                    args: {
+                        attrs: {
+                            fill: 'red',
+                        },
+                    },
+                },
+            ]);
+        });
+
+        graph.on('edge:mouseleave', ({ cell }) => {
+            cell.removeTools();
+        });
     };
     const startDrag = (e) => {
         const target = e.currentTarget;
@@ -106,12 +140,20 @@ const GraphComponent = forwardRef((props, ref) => {
 
     return (
         <div className={style.content}>
-            <Button
-                className={style.button}
-                onClick={getContent}
-            >
-                getContent
-            </Button>
+            <div className={style.graph_control}>
+                <Button
+                    className={style.button}
+                    onClick={getContent}
+                >
+                    getContent
+                </Button>
+                <Button
+                    className={style.button}
+                    onClick={getSelection}
+                >
+                    getSelection
+                </Button>
+            </div>
             <div
                 className={style.dnd_wrap}
                 ref={dndContainerRef}

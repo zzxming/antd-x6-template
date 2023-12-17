@@ -5,10 +5,11 @@
 .content {
     @apply flex-1 relative flex w-full h-full;
 }
-.content .button {
+.graph_control {
     @apply fixed top-0 right-0 z-10;
+    .button {
+    }
 }
-
 .dnd {
     &_wrap {
         @apply flex flex-col items-center w-52 p-4 border border-slate-100 select-none;

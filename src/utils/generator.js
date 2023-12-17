@@ -2,7 +2,7 @@ import { randomID } from '@/utils/generic';
 
 const portsAttr = {
     circle: {
-        r: 6,
+        r: 4,
         magnet: true,
         stroke: '#ccc',
     },
@@ -82,6 +82,15 @@ export const createPortRect = (options) => {
             },
         },
         ports: fourPort(),
+        tools: ['node-editor'],
+        ...options,
+    };
+};
+
+export const createEdge = (options) => {
+    return {
+        shape: 'edge',
+        tools: ['edge-editor'],
         ...options,
     };
 };
