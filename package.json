@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.18.1",
+    "@ant-design/icons": "^5.2.6",
     "@antv/x6": "^2.16.1",
     "@antv/x6-plugin-dnd": "^2.1.1",
     "@antv/x6-plugin-selection": "^2.2.1",
@@ -21,6 +22,7 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "autoprefixer": "^10.0.1",
     "postcss": "^8",
     "sass": "^1.69.5",

@@ -14,6 +14,9 @@ module.exports = {
             colors: {
                 border: '#8f8f8f',
             },
+            lineHeight: {
+                0: '0px',
+            },
         },
     },
     plugins: [],

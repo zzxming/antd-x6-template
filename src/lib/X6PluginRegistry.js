@@ -48,7 +48,7 @@ export const registrySelection = (graphInstance) => {
         new Selection({
             enabled: true,
             multiple: true, // 多选，启用后按住 modifiers 配置的按键点击节点实现多选
-            modifiers: 'shift',
+            multipleSelectionModifiers: ['shift'],
             rubberband: false, // 框选节点功能
             movable: false, // 拖动选框时框选的节点是否一起移动
             showNodeSelectionBox: true, // 是否显示节点的选择框

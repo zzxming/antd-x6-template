@@ -1,0 +1,11 @@
+.dnd {
+    &_wrap {
+        @apply flex flex-col items-center w-full px-4 select-none;
+    }
+    &-item {
+        @apply relative flex items-center justify-center w-24 h-9 leading-9 m-2 text-center cursor-move;
+    }
+    &-rect {
+        @apply w-full border border-border rounded-md;
+    }
+}
