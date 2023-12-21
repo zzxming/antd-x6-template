@@ -1,6 +1,6 @@
 'use client';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { Graph } from '@antv/x6';
+import { Graph, Shape } from '@antv/x6';
 import { Button } from 'antd';
 import { registryDnd, registrySelection, registrySnapline, registryTransform } from '@/lib/X6PluginRegistry';
 import '@/lib/X6GraphConnectorRegistry';
@@ -8,7 +8,9 @@ import '@/lib/X6GraphConnectorRegistry';
 import style from './index.module.scss';
 import GraphDnd from '@/components/GraphDnd';
 import EdgeAttrs from '@/components/EdgeAttrs';
+import GraphTools from '@/components/GraphTools';
 import { createEdge } from '@/utils/generator';
+import { textEdit } from '@/assets/const/toolName';
 
 const GraphComponent = forwardRef((props, ref) => {
     const graphRef = useRef();
@@ -18,7 +20,7 @@ const GraphComponent = forwardRef((props, ref) => {
     const dnd = useRef();
 
     const [lineType, setLineType] = useState('');
-    const [lineColor, setLineColor] = useState('#000');
+    const [lineColor, setLineColor] = useState('#000000');
 
     useEffect(() => {
         graphInstance.current = new Graph({
@@ -71,12 +73,6 @@ const GraphComponent = forwardRef((props, ref) => {
             graph: graphInstance,
         };
     });
-    const getContent = () => {
-        console.log(graphInstance.current.toJSON());
-    };
-    const getSelection = () => {
-        console.log(graphInstance.current.getSelectedCells());
-    };
     const bindEvent = () => {
         // 删除键删除选中节点
         window.addEventListener('keydown', (e) => {
@@ -134,12 +130,13 @@ const GraphComponent = forwardRef((props, ref) => {
             showPorts(ports, false);
         });
     };
+    // Dnd 拖拽
     const startDrag = (e, node) => {
         dnd.current.start(node, e.nativeEvent);
     };
+    // 切换连接线类型
     useEffect(() => {
         graphInstance.current.options.connecting.createEdge = () => {
-            console.log(lineColor);
             return graphInstance.current.createEdge(
                 createEdge({
                     attrs: {
@@ -156,6 +153,52 @@ const GraphComponent = forwardRef((props, ref) => {
         };
     }, [lineType, lineColor]);
 
+    const addLabel = useCallback(
+        ({ x, y }) => {
+            const text = graphInstance.current.addNode({
+                shape: 'text-block',
+                x,
+                y,
+                text: 'text',
+                attrs: {
+                    body: {
+                        strokeWidth: 0,
+                        fill: 'none',
+                    },
+                },
+            });
+            console.log(text);
+            // 事件不触发
+            // text.on('node:dblclick', ({ cell, view }) => {
+            //     console.log(cell, view);
+            //     text.setAttrs({
+            //         label: {
+            //             contenteidtable: true,
+            //         },
+            //     });
+            //     cell.focus();
+            // });
+        },
+        [graphInstance]
+    );
+    const [curTool, setCurTool] = useState('');
+    useEffect(() => {
+        console.log(graphInstance.current);
+        if (!graphInstance.current) return;
+        const map = {};
+        if (curTool === textEdit) {
+            graphInstance.current.on('blank:click', addLabel);
+        } else {
+            graphInstance.current.off('blank:click', addLabel);
+        }
+    }, [curTool]);
+
+    const getContent = () => {
+        console.log(graphInstance.current.toJSON());
+    };
+    const getSelection = () => {
+        console.log(graphInstance.current.getSelectedCells());
+    };
     return (
         <div className={style.graph_wrap}>
             <div className={style.graph_console}>
@@ -178,6 +221,10 @@ const GraphComponent = forwardRef((props, ref) => {
                     lineTypeChange={setLineType}
                     lineColor={lineColor}
                     lineColorChange={setLineColor}
+                />
+                <GraphTools
+                    value={curTool}
+                    onChange={setCurTool}
                 />
                 <GraphDnd
                     ref={dndContainerRef}
