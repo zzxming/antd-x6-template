@@ -21,7 +21,7 @@ const lines = [
 
 const EdgeAttrs = ({ lineType, lineTypeChange, lineColor, lineColorChange }) => {
     return (
-        <>
+        <div className={style.line_control}>
             <Radio.Group
                 value={lineType}
                 onChange={(e) => lineTypeChange(e.target.value)}
@@ -41,7 +41,7 @@ const EdgeAttrs = ({ lineType, lineTypeChange, lineColor, lineColorChange }) => 
                 value={lineColor}
                 onChange={(e) => lineColorChange(e.target.value)}
             />
-        </>
+        </div>
     );
 };
 
