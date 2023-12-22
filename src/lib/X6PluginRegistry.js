@@ -26,9 +26,9 @@ export const registryTransform = (graphInstance) => {
         new Transform({
             resizing: {
                 enabled: true,
-                minWidth: 36,
+                // minWidth: 36,
+                // minHeight: 36,
                 maxWidth: 200,
-                minHeight: 36,
                 maxHeight: 150,
                 orthogonal: false, //调整大小边界是否可以超出画布边缘
                 autoScroll: true, // 调整大小过程中是否保持节点的宽高比例

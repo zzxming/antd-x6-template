@@ -11,6 +11,7 @@ import EdgeAttrs from '@/components/EdgeAttrs';
 import GraphTools from '@/components/GraphTools';
 import { createEdge } from '@/utils/generator';
 import { textEdit } from '@/assets/const/toolName';
+import '@/lib/X6NodeRegistry';
 
 const GraphComponent = forwardRef((props, ref) => {
     const graphRef = useRef();
@@ -62,7 +63,7 @@ const GraphComponent = forwardRef((props, ref) => {
         registryTransform(graphInstance.current);
         registrySelection(graphInstance.current);
 
-        bindEvent();
+        bindEvent(graphInstance.current);
 
         graphInstance.current.fromJSON(props.data); // 渲染元素
         graphInstance.current.centerContent(); // 居中显示
@@ -73,15 +74,15 @@ const GraphComponent = forwardRef((props, ref) => {
             graph: graphInstance,
         };
     });
-    const bindEvent = () => {
+    const bindEvent = (graph) => {
         // 删除键删除选中节点
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Delete' || e.key === 'Backspace') {
-                graphInstance.current.removeCells(graphInstance.current.getSelectedCells());
+                graph.removeCells(graph.getSelectedCells());
             }
         });
         // 边添加箭头
-        graphInstance.current.on('edge:mouseenter', ({ cell }) => {
+        graph.on('edge:mouseenter', ({ cell }) => {
             cell.addTools([
                 {
                     name: 'source-arrowhead',
@@ -96,12 +97,12 @@ const GraphComponent = forwardRef((props, ref) => {
                 },
             ]);
         });
-        graphInstance.current.on('edge:mouseleave', ({ cell }) => {
+        graph.on('edge:mouseleave', ({ cell }) => {
             cell.removeTool('source-arrowhead');
             cell.removeTool('target-arrowhead');
         });
         // 边鼠标移入显示路径点
-        graphInstance.current.on('edge:mouseenter', ({ cell }) => {
+        graph.on('edge:mouseenter', ({ cell }) => {
             cell.addTools({
                 name: 'vertices',
                 args: {
@@ -109,7 +110,7 @@ const GraphComponent = forwardRef((props, ref) => {
                 },
             });
         });
-        graphInstance.current.on('edge:mouseleave', ({ cell }) => {
+        graph.on('edge:mouseleave', ({ cell }) => {
             if (cell.hasTool('vertices')) {
                 cell.removeTool('vertices');
             }
@@ -121,18 +122,34 @@ const GraphComponent = forwardRef((props, ref) => {
             }
         };
         // 要直接显示所有的连接庄，使拖拽时可以连接到连接庄
-        graphInstance.current.on('node:mouseenter', () => {
+        graph.on('node:mouseenter', () => {
             const ports = graphRef.current.querySelectorAll('.x6-port-body');
             showPorts(ports, true);
         });
-        graphInstance.current.on('node:mouseleave', () => {
+        graph.on('node:mouseleave', () => {
             const ports = graphRef.current.querySelectorAll('.x6-port-body');
             showPorts(ports, false);
         });
+
+        bindTextBlockEvent(graph);
     };
-    // Dnd 拖拽
-    const startDrag = (e, node) => {
-        dnd.current.start(node, e.nativeEvent);
+    const bindTextBlockEvent = (graph) => {
+        // 文本框大小改变时取消选中，为响应改变后的高度
+        graph.on('cell:change:size', ({ cell }) => {
+            if (cell.shape === 'text-block') {
+                graph.unselect(cell);
+            }
+        });
+        // 文本框选中后改变文本框大小使文本不超出
+        graph.on('cell:selected', ({ cell }) => {
+            if (cell.shape === 'text-block') {
+                const label = graph.findViewByCell(cell)?.selectors.label;
+                const { width, height } = cell.size();
+                if (label) {
+                    cell.setSize(Math.max(label.clientWidth, width), Math.max(label.clientHeight, height));
+                }
+            }
+        });
     };
     // 切换连接线类型
     useEffect(() => {
@@ -155,35 +172,41 @@ const GraphComponent = forwardRef((props, ref) => {
 
     const addLabel = useCallback(
         ({ x, y }) => {
-            const text = graphInstance.current.addNode({
-                shape: 'text-block',
+            graphInstance.current.addNode({
+                shape: 'text',
                 x,
                 y,
+                width: 80,
+                height: 36,
                 text: 'text',
                 attrs: {
                     body: {
                         strokeWidth: 0,
                         fill: 'none',
                     },
+                    label: {
+                        style: {
+                            width: 'fit-content',
+                            height: 'fit-content',
+                        },
+                    },
                 },
+                tools: [
+                    {
+                        name: 'node-editor',
+                        args: {
+                            getText: 'label/text',
+                            setText: 'label/text',
+                        },
+                    },
+                ],
             });
-            console.log(text);
-            // 事件不触发
-            // text.on('node:dblclick', ({ cell, view }) => {
-            //     console.log(cell, view);
-            //     text.setAttrs({
-            //         label: {
-            //             contenteidtable: true,
-            //         },
-            //     });
-            //     cell.focus();
-            // });
         },
         [graphInstance]
     );
+
     const [curTool, setCurTool] = useState('');
     useEffect(() => {
-        console.log(graphInstance.current);
         if (!graphInstance.current) return;
         const map = {};
         if (curTool === textEdit) {
@@ -192,6 +215,11 @@ const GraphComponent = forwardRef((props, ref) => {
             graphInstance.current.off('blank:click', addLabel);
         }
     }, [curTool]);
+
+    // Dnd 拖拽
+    const startDrag = (e, node) => {
+        dnd.current.start(node, e.nativeEvent);
+    };
 
     const getContent = () => {
         console.log(graphInstance.current.toJSON());
