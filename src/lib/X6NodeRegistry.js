@@ -1,6 +1,5 @@
 import { Graph } from '@antv/x6';
-import { Platform, Dom, FunctionExt, ObjectExt } from '@antv/x6-common';
-import { Attr } from '@antv/x6/lib/registry';
+import { Dom, ObjectExt } from '@antv/x6-common';
 import { Base } from '@antv/x6/lib/shape/base';
 
 // x6-common 的 dom 里 text
@@ -10,49 +9,30 @@ Graph.registerNode('text', {
             tagName: 'rect',
             selector: 'body',
         },
-        Platform.SUPPORT_FOREIGNOBJECT
-            ? {
-                  tagName: 'foreignObject',
-                  selector: 'foreignObject',
-                  children: [
-                      {
-                          tagName: 'div',
-                          ns: Dom.ns.xhtml,
-                          selector: 'label',
-                          style: {
-                              width: '100%',
-                              height: '100%',
-                              position: 'static',
-                              backgroundColor: 'transparent',
-                              textAlign: 'center',
-                              margin: 0,
-                              padding: '0px 5px',
-                              boxSizing: 'border-box',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              whiteSpace: 'pre-wrap',
-                          },
-                      },
-                  ],
-              }
-            : {
-                  tagName: 'text',
-                  selector: 'label',
-                  attrs: {
-                      textAnchor: 'middle',
-                  },
-              },
+        {
+            tagName: 'text',
+            selector: 'label',
+            attrs: {
+                textAnchor: 'middle',
+            },
+        },
+    ],
+    tools: [
+        {
+            name: 'node-editor',
+            args: {
+                getText: 'label/text',
+                setText: 'label/text',
+            },
+        },
     ],
     attrs: {
         body: {
             ...Base.bodyAttr,
             refWidth: '100%',
             refHeight: '100%',
-        },
-        foreignObject: {
-            refWidth: '100%',
-            refHeight: '100%',
+            strokeWidth: 0,
+            fill: 'none',
         },
         label: {
             style: {
@@ -73,23 +53,8 @@ Graph.registerNode('text', {
                 if (elem instanceof HTMLElement) {
                     elem.textContent = text;
                 } else {
-                    // No foreign object
-                    const style = attrs.styl || {};
-                    const wrapValue = { text, width: -5, height: '100%' };
-                    const wrapAttrs = {
-                        textVerticalAnchor: 'middle',
-                        ...style,
-                    };
-
-                    const textWrap = Attr.presets.textWrap;
-                    FunctionExt.call(textWrap.set, this, wrapValue, {
-                        cell,
-                        view,
-                        elem,
-                        refBBox,
-                        attrs: wrapAttrs,
-                    });
-
+                    const style = attrs.style || {};
+                    Dom.text(elem, text, { textVerticalAnchor: 'middle' });
                     return { fill: style.color || null };
                 }
             },

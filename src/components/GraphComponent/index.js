@@ -38,12 +38,12 @@ const GraphComponent = forwardRef((props, ref) => {
             // 平移
             // panning: true,
             // 缩放
-            mousewheel: {
-                enabled: true,
-                //   modifiers: 'Ctrl',
-                maxScale: 2,
-                minScale: 0.5,
-            },
+            // mousewheel: {
+            //     enabled: true,
+            //     //   modifiers: 'Ctrl',
+            //     maxScale: 2,
+            //     minScale: 0.5,
+            // },
             // 连接规则.https://x6.antv.antgroup.com/api/model/interaction
             connecting: {
                 router: 'orth', //路由将边的路径点 vertices 做进一步转换处理，并在必要时添加额外的点.https://x6.antv.antgroup.com/api/registry/router
@@ -179,27 +179,6 @@ const GraphComponent = forwardRef((props, ref) => {
                 width: 80,
                 height: 36,
                 text: 'text',
-                attrs: {
-                    body: {
-                        strokeWidth: 0,
-                        fill: 'none',
-                    },
-                    label: {
-                        style: {
-                            width: 'fit-content',
-                            height: 'fit-content',
-                        },
-                    },
-                },
-                tools: [
-                    {
-                        name: 'node-editor',
-                        args: {
-                            getText: 'label/text',
-                            setText: 'label/text',
-                        },
-                    },
-                ],
             });
         },
         [graphInstance]
