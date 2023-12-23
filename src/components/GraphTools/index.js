@@ -6,11 +6,7 @@ import { textEdit } from '@/assets/const/toolName';
 
 const GraphTools = ({ value, onChange }) => {
     const changeValue = (e) => {
-        if (value === e.target.value) {
-            onChange('');
-        } else {
-            onChange(e.target.value);
-        }
+        onChange(value === e.target.value ? '' : e.target.value);
     };
     return (
         <div className={style.tool_control}>

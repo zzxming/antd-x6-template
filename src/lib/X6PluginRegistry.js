@@ -26,9 +26,9 @@ export const registryTransform = (graphInstance) => {
         new Transform({
             resizing: {
                 enabled: true,
-                minWidth: 36,
+                // minWidth: 36,
+                // minHeight: 36,
                 maxWidth: 200,
-                minHeight: 36,
                 maxHeight: 150,
                 orthogonal: false, //调整大小边界是否可以超出画布边缘
                 autoScroll: true, // 调整大小过程中是否保持节点的宽高比例
@@ -53,7 +53,7 @@ export const registrySelection = (graphInstance) => {
             movable: false, // 拖动选框时框选的节点是否一起移动
             showNodeSelectionBox: true, // 是否显示节点的选择框
             // showEdgeSelectionBox: true, //是否显示边的选择框
-            pointerEvents: 'auto', // 如果打开 showNodeSelectionBox 时，会在节点上方盖一层元素，导致节点的事件无法响应，此时可以配置 pointerEvents: none 来解决，默认值是 auto
+            pointerEvents: 'none', // 如果打开 showNodeSelectionBox 时，会在节点上方盖一层元素，导致节点的事件无法响应，此时可以配置 pointerEvents: none 来解决，默认值是 auto
         })
     );
 };
