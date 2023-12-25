@@ -1,5 +1,5 @@
 'use client';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Graph } from '@antv/x6';
 import { Button } from 'antd';
 import { registryDnd, registrySelection, registrySnapline, registryTransform } from '@/lib/X6PluginRegistry';
@@ -8,11 +8,13 @@ import '@/lib/X6GraphConnectorRegistry';
 import style from './index.module.scss';
 import GraphDnd from '@/components/GraphDnd';
 import EdgeAttrs from '@/components/EdgeAttrs';
+import GraphTools from '@/components/GraphTools';
 import { createEdge } from '@/utils/generator';
-import { textEdit } from '@/assets/const/toolName';
 import '@/lib/X6NodeRegistry';
 
 const GraphComponent = forwardRef((props, ref) => {
+    const [inital, setInital] = useState(false);
+
     const graphRef = useRef();
     const dndContainerRef = useRef();
 
@@ -20,7 +22,7 @@ const GraphComponent = forwardRef((props, ref) => {
     const dnd = useRef();
 
     const [lineType, setLineType] = useState('');
-    const [lineColor, setLineColor] = useState('#000');
+    const [lineColor, setLineColor] = useState('#000000');
 
     useEffect(() => {
         graphInstance.current = new Graph({
@@ -45,7 +47,7 @@ const GraphComponent = forwardRef((props, ref) => {
             // },
             // 连接规则.https://x6.antv.antgroup.com/api/model/interaction
             connecting: {
-                router: 'orth', //路由将边的路径点 vertices 做进一步转换处理，并在必要时添加额外的点.https://x6.antv.antgroup.com/api/registry/router
+                router: 'manhattan', //路由将边的路径点 vertices 做进一步转换处理，并在必要时添加额外的点.https://x6.antv.antgroup.com/api/registry/router
                 snap: true, // 自动吸附
                 highlight: true,
                 allowBlank: true, // 是否允许连接到空白位置
@@ -56,6 +58,9 @@ const GraphComponent = forwardRef((props, ref) => {
                 allowPort: true, // 是否允许边连接到连接桩
             },
         });
+        // 开发者工具
+        window.__x6_instances__ = [];
+        window.__x6_instances__.push(graphInstance.current);
 
         registrySnapline(graphInstance.current);
         dnd.current = registryDnd(graphInstance.current, dndContainerRef.current);
@@ -66,6 +71,7 @@ const GraphComponent = forwardRef((props, ref) => {
 
         graphInstance.current.fromJSON(props.data); // 渲染元素
         graphInstance.current.centerContent(); // 居中显示
+        setInital(true);
     }, []);
 
     useImperativeHandle(ref, () => {
@@ -73,6 +79,7 @@ const GraphComponent = forwardRef((props, ref) => {
             graph: graphInstance,
         };
     });
+
     const bindEvent = (graph) => {
         // 删除键删除选中节点
         window.addEventListener('keydown', (e) => {
@@ -80,8 +87,8 @@ const GraphComponent = forwardRef((props, ref) => {
                 graph.removeCells(graph.getSelectedCells());
             }
         });
-        // 边添加箭头
         graph.on('edge:mouseenter', ({ cell }) => {
+            // 边添加箭头
             cell.addTools([
                 {
                     name: 'source-arrowhead',
@@ -95,13 +102,7 @@ const GraphComponent = forwardRef((props, ref) => {
                     },
                 },
             ]);
-        });
-        graph.on('edge:mouseleave', ({ cell }) => {
-            cell.removeTool('source-arrowhead');
-            cell.removeTool('target-arrowhead');
-        });
-        // 边鼠标移入显示路径点
-        graph.on('edge:mouseenter', ({ cell }) => {
+            // 边鼠标显示隐藏路径点
             cell.addTools({
                 name: 'vertices',
                 args: {
@@ -110,6 +111,10 @@ const GraphComponent = forwardRef((props, ref) => {
             });
         });
         graph.on('edge:mouseleave', ({ cell }) => {
+            // 边移除箭头
+            cell.removeTool('source-arrowhead');
+            cell.removeTool('target-arrowhead');
+            // 边鼠标移入隐藏路径点
             if (cell.hasTool('vertices')) {
                 cell.removeTool('vertices');
             }
@@ -129,11 +134,30 @@ const GraphComponent = forwardRef((props, ref) => {
             const ports = graphRef.current.querySelectorAll('.x6-port-body');
             showPorts(ports, false);
         });
+
+        bindTextBlockEvent(graph);
+    };
+    const bindTextBlockEvent = (graph) => {
+        // 文本框大小改变时取消选中，为响应改变后的高度
+        graph.on('cell:change:size', ({ cell }) => {
+            if (cell.shape === 'text-block') {
+                graph.unselect(cell);
+            }
+        });
+        // 文本框选中后改变文本框大小使文本不超出
+        graph.on('cell:selected', ({ cell }) => {
+            if (cell.shape === 'text-block') {
+                const label = graph.findViewByCell(cell)?.selectors.label;
+                const { width, height } = cell.size();
+                if (label) {
+                    cell.setSize(Math.max(label.clientWidth, width), Math.max(label.clientHeight, height));
+                }
+            }
+        });
     };
     // 切换连接线类型
     useEffect(() => {
         graphInstance.current.options.connecting.createEdge = () => {
-            console.log(lineColor);
             return graphInstance.current.createEdge(
                 createEdge({
                     attrs: {
@@ -150,31 +174,6 @@ const GraphComponent = forwardRef((props, ref) => {
         };
     }, [lineType, lineColor]);
 
-    const addLabel = useCallback(
-        ({ x, y }) => {
-            graphInstance.current.addNode({
-                shape: 'text',
-                x,
-                y,
-                width: 80,
-                height: 36,
-                text: 'text',
-            });
-        },
-        [graphInstance]
-    );
-
-    const [curTool, setCurTool] = useState('');
-    useEffect(() => {
-        if (!graphInstance.current) return;
-        const map = {};
-        if (curTool === textEdit) {
-            graphInstance.current.on('blank:click', addLabel);
-        } else {
-            graphInstance.current.off('blank:click', addLabel);
-        }
-    }, [curTool]);
-
     // Dnd 拖拽
     const startDrag = (e, node) => {
         dnd.current.start(node, e.nativeEvent);
@@ -188,33 +187,40 @@ const GraphComponent = forwardRef((props, ref) => {
     };
     return (
         <div className={style.graph_wrap}>
-            <div className={style.graph_console}>
-                <Button
-                    className={style.button}
-                    onClick={getContent}
-                >
-                    getContent
-                </Button>
-                <Button
-                    className={style.button}
-                    onClick={getSelection}
-                >
-                    getSelection
-                </Button>
-            </div>
-            <div className={style.graph_control}>
-                <EdgeAttrs
-                    lineType={lineType}
-                    lineTypeChange={setLineType}
-                    lineColor={lineColor}
-                    lineColorChange={setLineColor}
-                />
-                <GraphDnd
-                    ref={dndContainerRef}
-                    graph={graphInstance}
-                    startDrag={startDrag}
-                />
-            </div>
+            {inital ? (
+                <>
+                    <div className={style.graph_console}>
+                        <Button
+                            className={style.button}
+                            onClick={getContent}
+                        >
+                            getContent
+                        </Button>
+                        <Button
+                            className={style.button}
+                            onClick={getSelection}
+                        >
+                            getSelection
+                        </Button>
+                    </div>
+                    <div className={style.graph_control}>
+                        <EdgeAttrs
+                            lineType={lineType}
+                            lineTypeChange={setLineType}
+                            lineColor={lineColor}
+                            lineColorChange={setLineColor}
+                        />
+                        <GraphTools graph={graphInstance} />
+                        <GraphDnd
+                            ref={dndContainerRef}
+                            graph={graphInstance}
+                            startDrag={startDrag}
+                        />
+                    </div>
+                </>
+            ) : (
+                ''
+            )}
             <div
                 ref={graphRef}
                 className={style.graph}

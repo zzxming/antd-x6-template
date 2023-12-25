@@ -1,4 +1,7 @@
 .line {
+    &_control {
+        @apply flex flex-wrap items-center gap-2;
+    }
     &_btn {
         @apply h-6 text-base;
     }

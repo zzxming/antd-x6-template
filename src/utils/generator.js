@@ -90,7 +90,7 @@ export const createPortRect = (options) => {
 
 export const createEdge = (options) => {
     return {
-        tools: ['edge-editor'],
+        // tools: ['edge-editor'],
         ...options,
     };
 };
