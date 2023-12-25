@@ -5,10 +5,8 @@
     }
     &_console {
         @apply fixed top-0 right-0 z-10;
-        .button {
-        }
     }
     &_control {
-        @apply flex flex-col items-center w-52 py-4 border border-slate-100 select-none;
+        @apply flex flex-col items-center gap-1 w-52 py-4 border border-slate-100 select-none;
     }
 }

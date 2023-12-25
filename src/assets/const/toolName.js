@@ -1,1 +1,1 @@
-export const textEdit = 'textEdit';
+export const Edit = 'edit';
