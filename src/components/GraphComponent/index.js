@@ -36,6 +36,7 @@ const GraphComponent = forwardRef((props, ref) => {
                 visible: true,
                 type: 'doubleMesh',
             },
+            virtual: true,
             // 平移
             // panning: true,
             // 缩放
