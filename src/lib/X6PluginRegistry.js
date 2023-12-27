@@ -25,18 +25,22 @@ export const registryTransform = (graphInstance) => {
     graphInstance.use(
         new Transform({
             resizing: {
-                enabled: true,
+                enabled(cell) {
+                    return !cell.getProp('freeze');
+                },
                 // minWidth: 36,
                 // minHeight: 36,
                 maxWidth: 200,
                 maxHeight: 150,
-                orthogonal: false, //调整大小边界是否可以超出画布边缘
+                orthogonal: false, // 是否显示中间调整点
                 autoScroll: true, // 调整大小过程中是否保持节点的宽高比例
                 restrict: false, // 调整大小边界是否可以超出画布边缘
                 preserveAspectRatio: false, // 调整大小过程中是否保持节点的宽高比例
             },
             rotating: {
-                enabled: true,
+                enabled(cell) {
+                    return !cell.getProp('freeze');
+                },
                 grid: 15, // 每次旋转角度
             },
         })
@@ -54,6 +58,9 @@ export const registrySelection = (graphInstance) => {
             showNodeSelectionBox: true, // 是否显示节点的选择框
             // showEdgeSelectionBox: true, //是否显示边的选择框
             pointerEvents: 'none', // 如果打开 showNodeSelectionBox 时，会在节点上方盖一层元素，导致节点的事件无法响应，此时可以配置 pointerEvents: none 来解决，默认值是 auto
+            filter: (cell) => {
+                return !cell.getProp('freeze');
+            },
         })
     );
 };

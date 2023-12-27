@@ -3,6 +3,11 @@ import { Dom, ObjectExt, FunctionExt } from '@antv/x6-common';
 import { Attr } from '@antv/x6/lib/registry';
 import { Base } from '@antv/x6/lib/shape/base';
 
+// Graph.registerNode('combine-cell', {
+//     inherit: 'rect',
+
+// })
+
 Graph.registerNode('text', {
     markup: [
         {

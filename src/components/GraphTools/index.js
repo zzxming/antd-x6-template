@@ -69,7 +69,7 @@ const GraphTools = ({ graph }) => {
     const getAttrs = () => {
         // 获取选中的节点中的文本属性
         const getTextAttr = (cell) => {
-            if (cell.isEdge()) {
+            if (cell.isEdge?.()) {
                 const labels = cell.getLabels();
                 let labelTextColor = InitalTextColor;
                 let labelTextBackgroundColor = InitalTextColor;

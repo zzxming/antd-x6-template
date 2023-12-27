@@ -58,6 +58,22 @@ const GraphComponent = forwardRef((props, ref) => {
                 allowEdge: true, // 是否允许边连接到另一个边
                 allowPort: true, // 是否允许边连接到连接桩
             },
+            interacting: (view) => {
+                // 具有 freeze 属性的节点不能被拖动
+                return {
+                    nodeMovable: !view.cell.getProp('freeze'),
+                    // magnetConnectable: !view.cell.getProp('freeze'),
+                    // edgeMovable: !view.cell.getProp('freeze'),
+                    // edgeLabelMovable: !view.cell.getProp('freeze'),
+                    // arrowheadMovable: !view.cell.getProp('freeze'),
+                    // vertexMovable: !view.cell.getProp('freeze'),
+                    // vertexAddable: !view.cell.getProp('freeze'),
+                    // vertexDeletable: !view.cell.getProp('freeze'),
+                    // useEdgeTools: !view.cell.getProp('freeze'),
+                    // stopDelegateOnDragging: !view.cell.getProp('freeze'),
+                    // toolsAddable: !view.cell.getProp('freeze'),
+                };
+            },
         });
         // 开发者工具
         window.__x6_instances__ = [];
@@ -73,6 +89,30 @@ const GraphComponent = forwardRef((props, ref) => {
         graphInstance.current.fromJSON(props.data); // 渲染元素
         graphInstance.current.centerContent(); // 居中显示
         setInital(true);
+
+        // 组合，之后看看注册一个节点直接是这样组合的状态，freeze属性存在就不可拖动和变化
+        const target = graphInstance.current.addNode({
+            shape: 'rect',
+            x: 60,
+            y: 80,
+            label: 'Child\n(outer)',
+            width: 80,
+            height: 60,
+            zIndex: 2,
+            freeze: true,
+            tools: ['node-editor'],
+        });
+        const parent = graphInstance.current.addNode({
+            shape: 'rect',
+            x: 40,
+            y: 40,
+            width: 360,
+            height: 160,
+            zIndex: 1,
+            label: 'Parent\n(try to move me)',
+            tools: ['node-editor'],
+        });
+        parent.addChild(target);
     }, []);
 
     useImperativeHandle(ref, () => {
